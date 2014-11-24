@@ -1,6 +1,13 @@
 #include "FeedbackServo.h"
 
+FeedbackServo::FeedbackServo() {
+}
+
 FeedbackServo::FeedbackServo(int pin, int feedbackPin) {
+    begin(pin, feedbackPin);
+}
+
+void FeedbackServo::begin(int pin, int feedbackPin) {
     _pin = pin;
     _feedbackPin = feedbackPin;
     _setting = 0;
@@ -9,6 +16,10 @@ FeedbackServo::FeedbackServo(int pin, int feedbackPin) {
 
 void FeedbackServo::setInputPin(int pin) {
     _inputPin = pin;
+}
+
+void FeedbackServo::unsetInputPin() {
+    _inputPin = -1;
 }
 
 void FeedbackServo::loop() {
@@ -21,14 +32,12 @@ void FeedbackServo::loop() {
         int mapped = map(input, 0, 1023, 0, 180);
 
         if (abs(mapped - _setting) > SET_THRESHOLD) {
-            _setting = mapped;
-            _setTime = t;
-            _servo.attach(_pin);
+            set(mapped);
         }
+    }
 
-        if (_servo.attached()) {
-            _servo.write(mapped);
-        }
+    if (_servo.attached()) {
+        _servo.write(_setting);
     }
 
     if (t - _setTime > SET_DELAY && diff == 0 && _servo.attached()) {
@@ -42,4 +51,12 @@ void FeedbackServo::loop() {
 
 int FeedbackServo::setting() {
     return _setting;
+}
+
+void FeedbackServo::set(int setting) {
+    if (_setting != setting) {
+        _setting = setting;
+        _setTime = millis();
+        _servo.attach(_pin);
+    }
 }
