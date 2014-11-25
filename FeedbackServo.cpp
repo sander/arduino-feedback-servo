@@ -1,6 +1,7 @@
 #include "FeedbackServo.h"
 
 FeedbackServo::FeedbackServo() {
+    _reversed = false;
 }
 
 FeedbackServo::FeedbackServo(int pin, int feedbackPin) {
@@ -37,13 +38,15 @@ void FeedbackServo::loop() {
     }
 
     if (_servo.attached()) {
-        _servo.write(_setting);
+        _servo.write(_reversed ? 180 - _setting : _setting);
     }
+
+    //Serial.println(diff);
 
     if (t - _setTime > SET_DELAY && diff == 0 && _servo.attached()) {
         _servo.detach();
     } else if (t - _setTime > SET_DELAY && _servo.attached()) {
-        Serial.println(diff);
+        //Serial.println(diff);
     }
 
     _lastPos = feedback;
@@ -59,4 +62,8 @@ void FeedbackServo::set(int setting) {
         _setTime = millis();
         _servo.attach(_pin);
     }
+}
+
+void FeedbackServo::setReversed(bool reversed) {
+    _reversed = reversed;
 }
