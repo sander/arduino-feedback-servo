@@ -32,13 +32,13 @@ void FeedbackServo::loop() {
         int input = analogRead(_inputPin);
         int mapped = map(input, 0, 1023, 0, 180);
 
-        if (abs(mapped - _setting) > SET_THRESHOLD) {
+        if (abs(mapped - adjustedSetting()) > SET_THRESHOLD) {
             set(mapped);
         }
     }
 
     if (_servo.attached()) {
-        _servo.write(_reversed ? 180 - _setting : _setting);
+        _servo.write(_reversed ? 180 - adjustedSetting() : adjustedSetting());
     }
 
     //Serial.println(diff);
@@ -52,6 +52,10 @@ void FeedbackServo::loop() {
     _lastPos = feedback;
 }
 
+int FeedbackServo::adjustedSetting() {
+    return constrain(_setting + _adjustment, 0, 180);
+}
+
 int FeedbackServo::setting() {
     return _setting;
 }
@@ -59,6 +63,14 @@ int FeedbackServo::setting() {
 void FeedbackServo::set(int setting) {
     if (_setting != setting) {
         _setting = setting;
+        _setTime = millis();
+        _servo.attach(_pin);
+    }
+}
+
+void FeedbackServo::adjust(int adjustment) {
+    if (_adjustment != adjustment) {
+        _adjustment = adjustment;
         _setTime = millis();
         _servo.attach(_pin);
     }

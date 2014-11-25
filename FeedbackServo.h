@@ -19,6 +19,7 @@ public:
     void loop();
     int setting();
     void set(int setting);
+    void adjust(int adjustment);
     void setReversed(bool reversed);
 private:
     Servo _servo;
@@ -28,11 +29,14 @@ private:
     int _inputPin;
 
     int _setting;
+    int _adjustment;
     unsigned long _setTime;
 
     int _lastPos;
 
     bool _reversed;
+
+    int adjustedSetting();
 };
 
 #endif
