@@ -4,10 +4,10 @@
 #include "Arduino.h"
 #include "Servo.h"
 
-#define SET_DELAY 300
-
 // SET_THRESHOLD is used when an input pin (e.g. manual potmeter) is used.
 #define SET_THRESHOLD 2
+
+#define FEEDBACK_THRESHOLD 2
 
 class FeedbackServo {
 public:
@@ -19,9 +19,15 @@ public:
     void loop();
     int setting();
     void set(int setting);
+    void setMicro(int setting);
     void adjust(int adjustment);
     void setReversed(bool reversed);
     int adjustedSetting();
+    int adjustedSettingMicro();
+    bool inMicro();
+    int feedback();
+    void setMaxDelay(unsigned long delay);
+    bool attached();
 private:
     Servo _servo;
 
@@ -30,12 +36,18 @@ private:
     int _inputPin;
 
     int _setting;
+    int _settingMicro;
     int _adjustment;
     unsigned long _setTime;
 
     int _lastPos;
+    int _feedback;
 
     bool _reversed;
+
+    unsigned long _maxDelay;
+
+    int revert(int setting);
 };
 
 #endif

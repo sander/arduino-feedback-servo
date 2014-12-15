@@ -12,7 +12,9 @@ void FeedbackServo::begin(int pin, int feedbackPin) {
     _pin = pin;
     _feedbackPin = feedbackPin;
     _setting = 0;
+    _settingMicro = -1;
     _inputPin = -1;
+    _maxDelay = 300;
 }
 
 void FeedbackServo::setInputPin(int pin) {
@@ -25,10 +27,11 @@ void FeedbackServo::unsetInputPin() {
 
 void FeedbackServo::loop() {
     unsigned long t = millis();
-    int feedback = analogRead(_feedbackPin);
-    int diff = abs(_lastPos - feedback);
+    _feedback = analogRead(_feedbackPin);
+    int diff = abs(_lastPos - _feedback);
 
     if (_inputPin != -1) {
+        // NOTE this only works with 0-180 values right now.
         int input = analogRead(_inputPin);
         int mapped = map(input, 0, 1023, 0, 180);
 
@@ -37,23 +40,35 @@ void FeedbackServo::loop() {
         }
     }
 
-    if (_servo.attached()) {
-        _servo.write(_reversed ? 180 - adjustedSetting() : adjustedSetting());
+    if (attached()) {
+        if (inMicro()) {
+            _servo.writeMicroseconds(_reversed ? revert(adjustedSettingMicro()) : adjustedSettingMicro());
+        } else {
+            _servo.write(_reversed ? revert(adjustedSetting()) : adjustedSetting());
+        }
+
+        if (t - _setTime > _maxDelay && diff < FEEDBACK_THRESHOLD) {
+            _servo.detach();
+        }
     }
 
-    //Serial.println(diff);
+    _lastPos = _feedback;
+}
 
-    if (t - _setTime > SET_DELAY && diff == 0 && _servo.attached()) {
-        _servo.detach();
-    } else if (t - _setTime > SET_DELAY && _servo.attached()) {
-        //Serial.println(diff);
-    }
+int FeedbackServo::feedback() {
+    return _feedback;
+}
 
-    _lastPos = feedback;
+int FeedbackServo::revert(int setting) {
+    return (inMicro() ? 3000 : 180) - setting;
 }
 
 int FeedbackServo::adjustedSetting() {
     return constrain(_setting + _adjustment, 0, 180);
+}
+
+int FeedbackServo::adjustedSettingMicro() {
+    return constrain(_settingMicro + _adjustment, 700, 2300);
 }
 
 int FeedbackServo::setting() {
@@ -63,6 +78,15 @@ int FeedbackServo::setting() {
 void FeedbackServo::set(int setting) {
     if (_setting != setting) {
         _setting = setting;
+        _setTime = millis();
+        _servo.attach(_pin);
+    }
+}
+
+void FeedbackServo::setMicro(int setting) {
+    // Range 700-2300 (so 1600 step resolution)
+    if (setting != _settingMicro) {
+        _settingMicro = setting;
         _setTime = millis();
         _servo.attach(_pin);
     }
@@ -78,4 +102,16 @@ void FeedbackServo::adjust(int adjustment) {
 
 void FeedbackServo::setReversed(bool reversed) {
     _reversed = reversed;
+}
+
+bool FeedbackServo::inMicro() {
+    return _settingMicro != -1;
+}
+
+void FeedbackServo::setMaxDelay(unsigned long delay) {
+    _maxDelay = delay;
+}
+
+bool FeedbackServo::attached() {
+    return _servo.attached();
 }
