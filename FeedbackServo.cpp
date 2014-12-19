@@ -42,7 +42,7 @@ void FeedbackServo::loop() {
 
     if (attached()) {
         if (inMicro()) {
-            _servo.writeMicroseconds(_reversed ? revert(adjustedSettingMicro()) : adjustedSettingMicro());
+            _servo.writeMicroseconds(_reversed ? adjustedSettingMicroReverted() : adjustedSettingMicro());
         } else {
             _servo.write(_reversed ? revert(adjustedSetting()) : adjustedSetting());
         }
@@ -68,11 +68,24 @@ int FeedbackServo::adjustedSetting() {
 }
 
 int FeedbackServo::adjustedSettingMicro() {
-    return constrain(_settingMicro + _adjustment, 700, 2300);
+    return constrain(_settingMicro + _adjustment, _min, _max);
+}
+
+int FeedbackServo::adjustedSettingMicroReverted() {
+    return constrain(3000 - (_settingMicro + _adjustment), _min, _max);
 }
 
 int FeedbackServo::setting() {
     return _setting;
+}
+
+void FeedbackServo::mconstrain(int min, int max) {
+    _min = min;
+    _max = max;
+}
+
+int FeedbackServo::settingMicro() {
+    return _settingMicro;
 }
 
 void FeedbackServo::set(int setting) {

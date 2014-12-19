@@ -18,16 +18,19 @@ public:
     void unsetInputPin();
     void loop();
     int setting();
+    int settingMicro();
     void set(int setting);
     void setMicro(int setting);
     void adjust(int adjustment);
     void setReversed(bool reversed);
     int adjustedSetting();
     int adjustedSettingMicro();
+    int adjustedSettingMicroReverted();
     bool inMicro();
     int feedback();
     void setMaxDelay(unsigned long delay);
     bool attached();
+    void mconstrain(int min, int max);
 private:
     Servo _servo;
 
@@ -48,6 +51,9 @@ private:
     unsigned long _maxDelay;
 
     int revert(int setting);
+
+    int _min;
+    int _max;
 };
 
 #endif
