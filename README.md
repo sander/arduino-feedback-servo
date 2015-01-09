@@ -3,7 +3,7 @@
 ## Introduction
 
 This library makes it easier to use a feedback servo motor (e.g.
-[the Adafruit one](http://www.adafruit.com/products/1450). Right now
+[the Adafruit one](http://www.adafruit.com/products/1450)). Right now
 it supports reading from an analog input and adjusting the motor
 accordingly. The motor will stop when it doesn’t move any further, either
 because of the internal feedback loop or because of mechanical reasons.
